@@ -19,18 +19,30 @@ func sum(result chan int, num1 int, num2 int) {
 	result <- numResult
 }
 
-// go routine syncronizer
-func task(done chan bool) {
-	defer func() { done <- true }()
-	fmt.Println("processing the task...")
-
+func emailSender(emailChan chan string, complete chan bool) {
+	defer func() { complete <- true }() //this is the go routine syncronizer
+	for email := range emailChan {
+		fmt.Println("sending email to:", email)
+		time.Sleep(time.Second)
+	}
 }
 
 func main() {
 
-	done := make(chan bool)
-	go task(done)
-	<-done //block
+	//we can send limited amount of data without blocking with buffer channel
+	emailChan := make(chan string, 100)
+	complete := make(chan bool)
+
+	go emailSender(emailChan, complete)
+
+	for i := 0; i < 5; i++ {
+		emailChan <- fmt.Sprintf("%d@gmail.com", i)
+	}
+	fmt.Println("done sending")
+
+	//this is important to counter deadlock
+	close(emailChan)
+	<-complete
 
 	//receiving
 	result := make(chan int)
