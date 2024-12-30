@@ -23,5 +23,9 @@ func main() {
 	myStack := stack[int]{
 		elements: []int{4, 5, 6},
 	}
+	myStack2 := stack[string]{
+		elements: []string{"hassan", "nauman", "ali"},
+	}
 	fmt.Println(myStack)
+	fmt.Println(myStack2)
 }
