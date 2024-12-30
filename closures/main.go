@@ -11,6 +11,16 @@ func makeCounter() func() int {
 	}
 }
 
+func fibonacci() func() int {
+	a, b := 0, 1
+
+	return func() int {
+		current := a
+		a, b = b, a+b
+		return current
+	}
+}
+
 func main() {
 	counter := makeCounter()
 
@@ -21,4 +31,9 @@ func main() {
 	anotherCounter := makeCounter()
 	fmt.Println(anotherCounter())
 	fmt.Println(anotherCounter())
+
+	f := fibonacci()
+	for i := 0; i < 10; i++ {
+		fmt.Println(f())
+	}
 }
