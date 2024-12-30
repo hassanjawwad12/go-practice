@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 )
@@ -68,5 +69,44 @@ func main() {
 	//alternative
 	bytes := []byte(" Go-lang")
 	b.Write(bytes)
+
+	//reading from one file and writing inside another
+	sourceFile, err := os.Open("example.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer sourceFile.Close()
+
+	DestFile, err := os.Create("example3.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer DestFile.Close()
+
+	reader := bufio.NewReader(sourceFile)
+	writer := bufio.NewWriter(DestFile) //default size 4096
+
+	for {
+		c, err := reader.ReadByte()
+		if err != nil {
+			if err.Error() != "EOF" {
+				panic(err)
+			}
+			break
+		}
+		e := writer.WriteByte(c)
+		if e != nil {
+			panic(e)
+		}
+	}
+	writer.Flush()
+	println("written to new file successfully")
+
+	//delete a file
+	erro := os.Remove("example2.txt")
+	if erro != nil {
+		panic(erro)
+	}
+	fmt.Println("file deleted successfully")
 
 }
