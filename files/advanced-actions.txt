@@ -1,0 +1,241 @@
+   
+   1)FILE PERMISSIONS
+   err := os.Chmod("example.txt", 0644) // Read and write for owner, read-only for others
+   if err != nil {
+       log.Fatal(err)
+   }
+
+  2)FILE OWNERSHIPS
+   err := os.Chown("example.txt", 1000, 1000) // Change to user ID 1000 and group ID 1000
+   if err != nil {
+       log.Fatal(err)
+   }
+   
+   3)FILE LOCKING
+   file, err := os.OpenFile("example.txt", os.O_RDWR, 0644)
+   if err != nil {
+       log.Fatal(err)
+   }
+   defer file.Close()
+
+   err = syscall.Flock(int(file.Fd()), syscall.LOCK_EX) // Exclusive lock
+   if err != nil {
+       log.Fatal(err)
+   }
+
+
+   4)Memory-Mapped Files
+   m, err := mmap.Open("example.txt")
+   if err != nil {
+       log.Fatal(err)
+   }
+   defer m.Close()
+
+   data := m.Data()
+   fmt.Println(string(data))
+   
+   5)File Compression
+   outFile, err := os.Create("example.txt.gz")
+   if err != nil {
+       log.Fatal(err)
+   }
+   defer outFile.Close()
+
+   gzWriter := gzip.NewWriter(outFile)
+   defer gzWriter.Close()
+
+   _, err = gzWriter.Write([]byte("Hello, World!"))
+   if err != nil {
+       log.Fatal(err)
+   }
+
+   // Decompress
+   inFile, err := os.Open("example.txt.gz")
+   if err != nil {
+       log.Fatal(err)
+   }
+   defer inFile.Close()
+
+   gzReader, err := gzip.NewReader(inFile)
+   if err != nil {
+       log.Fatal(err)
+   }
+   defer gzReader.Close()
+
+   data, err := io.ReadAll(gzReader)
+   if err != nil {
+       log.Fatal(err)
+   }
+   fmt.Println(string(data))
+ 
+ 6)File Encryption
+
+   key := []byte("this-is-a-32-byte-key-1234567890123456")
+   plaintext := []byte("Hello, World!")
+
+   block, err := aes.NewCipher(key)
+   if err != nil {
+       log.Fatal(err)
+   }
+
+   ciphertext := make([]byte, aes.BlockSize+len(plaintext))
+   iv := ciphertext[:aes.BlockSize]
+   if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+       log.Fatal(err)
+   }
+
+   stream := cipher.NewCFBEncrypter(block, iv)
+   stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
+
+   fmt.Printf("Encrypted: %x\n", ciphertext)
+
+  8)File Hashing
+   file, err := os.Open("example.txt")
+   if err != nil {
+       log.Fatal(err)
+   }
+   defer file.Close()
+
+   hasher := sha256.New()
+   if _, err := io.Copy(hasher, file); err != nil {
+       log.Fatal(err)
+   }
+
+   fmt.Printf("SHA-256: %x\n", hasher.Sum(nil))
+   
+ 9)File Watching
+   watcher, err := fsnotify.NewWatcher()
+   if err != nil {
+       log.Fatal(err)
+   }
+   defer watcher.Close()
+
+   err = watcher.Add("example.txt")
+   if err != nil {
+       log.Fatal(err)
+   }
+
+   for {
+       select {
+       case event := <-watcher.Events:
+           fmt.Println("Event:", event)
+       case err := <-watcher.Errors:
+           log.Println("Error:", err)
+       }
+   }
+
+ 10)File System Operations
+   // Create a symbolic link
+   err := os.Symlink("example.txt", "example_link.txt")
+   if err != nil {
+       log.Fatal(err)
+   }
+
+   // Create a temporary file
+   tempFile, err := os.CreateTemp("", "example_*.txt")
+   if err != nil {
+       log.Fatal(err)
+   }
+   defer os.Remove(tempFile.Name())
+
+   fmt.Println("Temporary file:", tempFile.Name())
+   
+ 11)File Parsing**
+   // Parse JSON
+   type Person struct {
+       Name string `json:"name"`
+       Age  int    `json:"age"`
+   }
+
+   file, err := os.Open("example.json")
+   if err != nil {
+       log.Fatal(err)
+   }
+   defer file.Close()
+
+   var person Person
+   err = json.NewDecoder(file).Decode(&person)
+   if err != nil {
+       log.Fatal(err)
+   }
+
+   fmt.Println("Name:", person.Name)
+   fmt.Println("Age:", person.Age)
+   
+    12)File Upload/Download
+   http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
+       file, header, err := r.FormFile("file")
+       if err != nil {
+           http.Error(w, "Unable to read file", http.StatusBadRequest)
+           return
+       }
+       defer file.Close()
+
+       outFile, err := os.Create(header.Filename)
+       if err != nil {
+           http.Error(w, "Unable to save file", http.StatusInternalServerError)
+           return
+       }
+       defer outFile.Close()
+
+       _, err = io.Copy(outFile, file)
+       if err != nil {
+           http.Error(w, "Unable to save file", http.StatusInternalServerError)
+           return
+       }
+
+       fmt.Fprintf(w, "File uploaded successfully: %s", header.Filename)
+   })
+
+   http.ListenAndServe(":8080", nil)
+
+13) File Splitting and Merging
+   // Split a file
+   file, err := os.Open("largefile.txt")
+   if err != nil {
+       log.Fatal(err)
+   }
+   defer file.Close()
+
+   buffer := make([]byte, 1024*1024) // 1 MB chunks
+   for i := 0; ; i++ {
+       n, err := file.Read(buffer)
+       if err == io.EOF {
+           break
+       }
+       if err != nil {
+           log.Fatal(err)
+       }
+
+       chunkFile, err := os.Create(fmt.Sprintf("chunk_%d.txt", i))
+       if err != nil {
+           log.Fatal(err)
+       }
+       defer chunkFile.Close()
+
+       _, err = chunkFile.Write(buffer[:n])
+       if err != nil {
+           log.Fatal(err)
+       }
+   }
+
+   // Merge chunks
+   outFile, err := os.Create("mergedfile.txt")
+   if err != nil {
+       log.Fatal(err)
+   }
+   defer outFile.Close()
+
+   for i := 0; ; i++ {
+       chunkFile, err := os.Open(fmt.Sprintf("chunk_%d.txt", i))
+       if err != nil {
+           break
+       }
+       defer chunkFile.Close()
+
+       _, err = io.Copy(outFile, chunkFile)
+       if err != nil {
+           log.Fatal(err)
+       }
+   }
+   
