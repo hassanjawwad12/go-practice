@@ -45,7 +45,7 @@ func main() {
 	fmt.Println(string(a))
 
 	//reading the directories
-	dir, err := os.Open("../") //root folder
+	dir, err := os.Open(".") //root folder
 	if err != nil {
 		panic(err)
 	}
@@ -56,5 +56,17 @@ func main() {
 	for _, i := range fileInformation {
 		fmt.Println(i.Name(), i.IsDir())
 	}
+
+	//create a file
+	b, err := os.Create("example2.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer b.Close()
+	b.WriteString("hi go") //appends the file
+
+	//alternative
+	bytes := []byte(" Go-lang")
+	b.Write(bytes)
 
 }
