@@ -40,5 +40,28 @@ func main() {
 	}
 
 	fmt.Println("Content written to file successfully!")
-
 }
+
+/*
+
+newFile2, err := os.Create("example2.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer newFile2.Close()
+
+	writer := bufio.NewWriter(newFile)
+
+	_, err = writer.WriteString(content)
+	if err != nil {
+		panic(err)
+	}
+
+	err = writer.Flush()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Content written to new file successfully!")
+
+*/
