@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-const url = "https://jsonplaceholder.typicode.com/todos"
+const url = "https://jsonplaceholder.typicode.com/users"
 
 func main() {
 
