@@ -20,19 +20,13 @@ func main() {
 		Job:  "ASE",
 	}
 
-	jsonData, err := json.Marshal(requestBody)
+	jsonData, err := json.Marshal(requestBody) //JSON encoding
 	if err != nil {
 		fmt.Println("Error marshaling JSON:", err)
 		return
 	}
 
-	request, error := http.NewRequest("POST", URL, bytes.NewBuffer(jsonData))
-	if error != nil {
-		panic(error)
-	}
-	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
-	client := &http.Client{}
-	response, error := client.Do(request)
+	response, error := http.Post(URL, "application/json", bytes.NewBuffer(jsonData))
 	if error != nil {
 		panic(error)
 	}
